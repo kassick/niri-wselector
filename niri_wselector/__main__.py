@@ -130,8 +130,11 @@ def filter_by_dict(d: Sequence[FilterItem], filters: Sequence[Matcher]):
     return filter(filter_fn, d)
 
 
+MIN = -sys.maxsize - 1
+MAX = sys.maxsize
+
 class WindowHandler:
-    def __init__(self, niri: NiriState, window_filters: Sequence[Matcher] | None):
+    def __init__(self, niri: NiriState, select_focused: bool, window_filters: Sequence[Matcher] | None):
         self.niri = niri
         self.workspace_id_map = {w["id"]: w for w in self.niri.workspaces}
         windows = self.niri.windows
@@ -139,13 +142,16 @@ class WindowHandler:
         if window_filters:
             windows = filter_by_dict(windows, window_filters)
 
-        MIN = -sys.maxsize - 1
         # Sort windows by workspace, keeping the
         def sort_key(w: WindowEntryDict):
             workspace = self.workspace_id_map[w["workspace_id"]]
             output = workspace.get("output")
 
-            window_prio = MIN if w["is_focused"] else 0
+            # When we ask to select the focused window, keep it on top. Otherwise, keep it at the bottom
+            if select_focused:
+                window_prio = MIN if w["is_focused"] else 0
+            else:
+                window_prio = 0 if w["is_focused"] else MIN
 
             if workspace["is_focused"]:
                 workspace_prio = MIN
@@ -156,7 +162,7 @@ class WindowHandler:
 
             output_prio = MIN if output == niri.focused_output else 0
 
-            return window_prio, workspace_prio, output_prio, output, workspace["idx"], w["id"]
+            return workspace_prio, window_prio, output_prio, output, workspace["idx"], w["id"]
 
         self.windows = list(sorted(windows, key=sort_key))
         self.multiple_workspaces = (
@@ -176,7 +182,7 @@ class WindowHandler:
         self.dmenu_entries = [self._entry_to_dmenu(w) for w in self.windows]
         self.dmenu_selected = (
             self._entry_to_dmenu(self.niri.focused_window)
-            if self.niri.focused_window
+            if select_focused and self.niri.focused_window
             else None
         )
 
@@ -202,7 +208,7 @@ class WindowHandler:
 
 
 class WorkspaceHandler:
-    def __init__(self, niri: NiriState):
+    def __init__(self, niri: NiriState, select_focused: bool):
         self.niri = niri
         self.window_id_map = {w["id"]: w for w in self.niri.windows}
 
@@ -210,7 +216,7 @@ class WorkspaceHandler:
 
         def sort_key(w: WorkspaceEntryDict):
             if w["is_focused"]:
-                focus_prio = -2
+                focus_prio = -2 if select_focused else MAX
             elif w["is_active"]:
                 focus_prio = -1
             else:
@@ -218,7 +224,7 @@ class WorkspaceHandler:
 
             output_prio = -1 if w.get("output") == self.niri.focused_output else 0
 
-            return focus_prio, output_prio, w["idx"]
+            return focus_prio, output_prio, w.get("output"), w["idx"]
 
         self.workspaces = list(sorted(workspaces, key=sort_key))
         self.multiple_outputs = len(set(w.get("output") for w in self.workspaces)) > 1
@@ -227,7 +233,7 @@ class WorkspaceHandler:
         self.dmenu_entries = [self._entry_to_dmenu(w) for w in self.workspaces]
         self.dmenu_selected = (
             self._entry_to_dmenu(self.niri.focused_workspace)
-            if self.niri.focused_workspace
+            if select_focused and self.niri.focused_workspace
             else None
         )
 
@@ -266,6 +272,10 @@ def main():
 
     parser.add_argument(
         "--width", "-w", action="store", type=int, default=80, help="Width of the menu"
+    )
+
+    parser.add_argument(
+        "--select-focused", action="store_true", help="Select the focused item by default"
     )
 
     group = parser.add_mutually_exclusive_group(required=True)
@@ -355,9 +365,9 @@ def main():
 
             window_filters.append(DictKeyAnyMatcher("workspace_id", *_ids))
 
-        handler = WindowHandler(niri, window_filters=window_filters)
+        handler = WindowHandler(niri, args.select_focused, window_filters=window_filters)
     elif args.workspaces:
-        handler = WorkspaceHandler(niri)
+        handler = WorkspaceHandler(niri, args.select_focused)
     else:
         print("Must provide either --windows or --workspaces")
         sys.exit(1)
