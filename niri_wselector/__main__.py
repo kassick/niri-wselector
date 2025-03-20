@@ -381,7 +381,7 @@ def main():
     ]
 
     if not any(arg.startswith("--match-mode") for arg in fuzzel_args):
-        cmd.append("--match-mode=fzf")
+        cmd.append("--match-mode=fuzzy")
 
     if not any(arg.startswith("--width") or arg == "-w" or arg.startswith("-w=") for arg in fuzzel_args):
         cmd.append(f"--width={args.width}")
