@@ -2,6 +2,8 @@
 
 Quick hack to use [`fuzzel`](https://codeberg.org/dnkl/fuzzel) to select windows and workspaces in [niri](https://github.com/YaLTeR/niri).
 
+![screenshot](./sample.png)
+
 ## Installation
 
 Run `pip install git+https://github.com/kassick/niri-wselector.git`, or copy the `niri_wselector/__main__.py` script somewhere in your `$PATH`.
@@ -23,8 +25,11 @@ Run the script with either the `--windows` or `--workspaces` option to select _w
 
 ### Common flags:
 
-- `--width value` the window width, in characters (`fuzzel`'s `--width`)
-- `--select-focused` selects the focused window or workspace in the window.
+-   `--width value` the window width, in characters (`fuzzel`'s `--width`)
+-   `--select-focused` selects the focused window or workspace in the window.
+    Notice that this causes the placement of the selected window or workspace
+    to change -- see below in the _Window_ and _Workspace Ordering_ sections.
+-   `--prompt` defines the prompt to be used in fuzzel.
 
 ### Window Filtering Options
 
