@@ -278,6 +278,10 @@ def main():
         "--select-focused", action="store_true", help="Select the focused item by default"
     )
 
+    parser.add_argument(
+        "--prompt", action="store", help="Prompt to display in the dmenu", required=False
+    )
+
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--windows", action="store_true", help="Selects Windows")
     group.add_argument("--workspaces", action="store_true", help="Selects Workspaces")
@@ -372,12 +376,14 @@ def main():
         print("Must provide either --windows or --workspaces")
         sys.exit(1)
 
+    prompt = args.prompt or handler.dmenu_prompt
+
     cmd = [
         "fuzzel",
         "--dmenu",
         "--index",
         "--prompt",
-        f"{handler.dmenu_prompt}: ",
+        f"{prompt}: ",
     ]
 
     if not any(arg.startswith("--match-mode") for arg in fuzzel_args):
