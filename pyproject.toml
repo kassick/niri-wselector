@@ -1,0 +1,19 @@
+[project]
+name = "niri-wselector"
+version = "0.1.0"
+description = "Dirty Hack to select windows with fuzzel in the niri compositor"
+authors = [
+    {name = "Rodrigo Kassick",email = "kassick@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+]
+
+[tool.poetry.scripts]
+niri-wselector = "niri_wselector.__main__:main"
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
