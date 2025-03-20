@@ -21,6 +21,11 @@ Then you can update your niri bindings such as below:
 
 Run the script with either the `--windows` or `--workspaces` option to select _windows_ or _workspaces_.
 
+### Common flags:
+
+- `--width value` the window width, in characters (`fuzzel`'s `--width`)
+- `--select-focused` selects the focused window or workspace in the window.
+
 ### Window Filtering Options
 
 When running the script with `--windows`, the command line exposes some filtering options you can use:
@@ -49,3 +54,57 @@ When running the script with `--windows`, the command line exposes some filterin
       you have multiple monitors.
     - `--workspace @output` shows windows of all workspaces of the currently
       focused output.
+
+### Window Ordering
+
+Niri currently does not provide a list of windows in MRU, nor does it provide
+the column/row pair in `niri msg windows`, so there is no way of doing
+reasonable ordering of windows in a workspace.
+
+Nonetheless, this script tries to ensure a somewhat sane window ordering:
+
+-   **Current workspace**:
+
+    The windows of the current workspace appear first. By default, the focused window is shown **last** among these windows -- you likely do not want to select the window you're currently using ;).
+
+    If you use the `--select-focused` flag, then it will appear **first**,
+    because selecting an entry in the middle of the list looks weird.
+
+-   **Active workspaces**:
+
+    All windows in visible workspaces in your other outputs.
+
+-   **Other workspaces of the current output:**
+
+    Windows in other workspaces, ordered by the workspace index.
+
+-   **Workspaces of other outputs**:
+
+    All windows workspaces of your other outputs, ordered by their indexes.
+
+### Workspace Ordering
+
+The workspace priority is similar to the window list priority:
+
+- **Active workspaces**:
+
+    All workspaces visible in your outputs
+
+-   **Workspaces of the current output**:
+
+    These workspaces are ordered by their indexes.
+
+-   **Other outputs workspaces**:
+
+    These are ordered by the output and their indexes
+
+The current workspace appears **last**, by default. If you use the
+`--select-focused` option, then its brough up to the first entry.
+
+### Fuzzel Args
+
+You can forward arguments to `fuzzel`:
+
+``` bash
+niri-wselector --windows -- --match-mode=exact
+```
