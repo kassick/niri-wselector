@@ -295,7 +295,7 @@ def main():
     )
 
     group_win = parser.add_argument_group("Windows")
-    args = parser.parse_args()
+    args, fuzzel_args = parser.parse_known_args()
 
     niri = NiriState.new()
 
@@ -364,17 +364,23 @@ def main():
 
     cmd = [
         "fuzzel",
-        "--match-mode=fzf",
-        "--width",
-        str(args.width),
         "--dmenu",
         "--index",
         "--prompt",
         f"{handler.dmenu_prompt}: ",
     ]
 
+    if not any(arg.startswith("--match-mode") for arg in fuzzel_args):
+        cmd.append("--match-mode=fzf")
+
+    if not any(arg.startswith("--width") or arg == "-w" or arg.startswith("-w=") for arg in fuzzel_args):
+        cmd.append(f"--width={args.width}")
+
     if handler.dmenu_selected:
         cmd += ["--select", handler.dmenu_selected]
+
+    if fuzzel_args:
+        cmd += fuzzel_args[1:]  # drop `--`
 
     fuzzel = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
     out, err = fuzzel.communicate(input="\n".join(handler.dmenu_entries).encode("utf-8"))
