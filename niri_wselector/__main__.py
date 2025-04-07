@@ -13,6 +13,7 @@ from typing import (
     NotRequired,
     Protocol,
     Sequence,
+    Tuple,
     Type,
     TypeVar,
     TypedDict,
@@ -44,6 +45,8 @@ def niri_json_from_msg(*msg: str, type: Type[OutType] = list) -> OutType:
     """Simple wrapper, just to avoid typing information being lost with cache"""
     return _niri_json_from_msg_cached(*msg, type=type)
 
+class WindowLocationDict(TypedDict):
+    tile_pos_in_scrolling_layout: Tuple[int, int]
 
 class WindowEntryDict(TypedDict):
     id: int
@@ -52,6 +55,9 @@ class WindowEntryDict(TypedDict):
     workspace_id: int
     is_focused: bool
     is_floating: bool
+
+    # In yrkv fork of niri, still not merged!
+    location: NotRequired[WindowLocationDict]
 
 
 class WorkspaceEntryDict(TypedDict):
@@ -140,7 +146,7 @@ class WindowHandler:
         windows = self.niri.windows
 
         if window_filters:
-            windows = filter_by_dict(windows, window_filters)
+            windows = list(filter_by_dict(windows, window_filters))
 
         # Sort windows by workspace, keeping the
         def sort_key(w: WindowEntryDict):
@@ -162,7 +168,9 @@ class WindowHandler:
 
             output_prio = MIN if output == niri.focused_output else 0
 
-            return workspace_prio, window_prio, output_prio, output, workspace["idx"], w["id"]
+            grid_prio = w.get("location", {}).get("tile_pos_in_scrolling_layout", (0, 0))
+
+            return workspace_prio, window_prio, output_prio, output, grid_prio, workspace["idx"], w["id"]
 
         self.windows = list(sorted(windows, key=sort_key))
         self.multiple_workspaces = (
