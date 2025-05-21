@@ -4,6 +4,10 @@ Quick hack to use [`fuzzel`](https://codeberg.org/dnkl/fuzzel) to select windows
 
 ![screenshot](./sample.png)
 
+It also works when niri's overview is active. While niri [currently does not support filtering in overview](https://github.com/YaLTeR/niri/pull/1440) because [text editing hates you](https://lord.io/text-editing-hates-you-too/), using a `fuzzel` powered window selector improves the experience a bit ;)
+
+![video](./overview.gif)
+
 ## Installation
 
 Run `pip install git+https://github.com/kassick/niri-wselector.git`, or copy the `niri_wselector/__main__.py` script somewhere in your `$PATH`.
