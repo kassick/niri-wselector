@@ -55,6 +55,7 @@ class WindowEntryDict(TypedDict):
     workspace_id: int
     is_focused: bool
     is_floating: bool
+    is_urgent: NotRequired[bool]
 
     # In yrkv fork of niri, still not merged!
     location: NotRequired[WindowLocationDict]
@@ -153,6 +154,8 @@ class WindowHandler:
             workspace = self.workspace_id_map[w["workspace_id"]]
             output = workspace.get("output")
 
+            urgent_prio = MIN if w.get("is_urgent") else 0
+
             # When we ask to select the focused window, keep it on top. Otherwise, keep it at the bottom
             if select_focused:
                 window_prio = MIN if w["is_focused"] else 0
@@ -170,7 +173,7 @@ class WindowHandler:
 
             grid_prio = w.get("location", {}).get("tile_pos_in_scrolling_layout", (0, 0))
 
-            return workspace_prio, window_prio, output_prio, output, grid_prio, workspace["idx"], w["id"]
+            return urgent_prio, workspace_prio, window_prio, output_prio, output, grid_prio, workspace["idx"], w["id"]
 
         self.windows = list(sorted(windows, key=sort_key))
         self.multiple_workspaces = (
