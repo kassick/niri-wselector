@@ -45,8 +45,8 @@ def niri_json_from_msg(*msg: str, type: Type[OutType] = list) -> OutType:
     """Simple wrapper, just to avoid typing information being lost with cache"""
     return _niri_json_from_msg_cached(*msg, type=type)
 
-class WindowLocationDict(TypedDict):
-    tile_pos_in_scrolling_layout: Tuple[int, int]
+class WindowLayoutDict(TypedDict):
+    pos_in_scrolling_layout: Tuple[int, int]
 
 class WindowEntryDict(TypedDict):
     id: int
@@ -58,7 +58,7 @@ class WindowEntryDict(TypedDict):
     is_urgent: NotRequired[bool]
 
     # In yrkv fork of niri, still not merged!
-    location: NotRequired[WindowLocationDict]
+    layout: NotRequired[WindowLayoutDict]
 
 
 class WorkspaceEntryDict(TypedDict):
@@ -171,7 +171,9 @@ class WindowHandler:
 
             output_prio = MIN if output == niri.focused_output else 0
 
-            grid_prio = w.get("location", {}).get("tile_pos_in_scrolling_layout", (0, 0))
+            layout = w.get("layout", {})
+            grid_pos = layout.get("pos_in_scrolling_layout")
+            grid_prio = grid_pos or (0, 0)
 
             return urgent_prio, workspace_prio, window_prio, output_prio, output, grid_prio, workspace["idx"], w["id"]
 
