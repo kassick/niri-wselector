@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass
 from functools import cache, cached_property, partial
-import itertools
 import sys
 import json
 import subprocess
